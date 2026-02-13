@@ -3,13 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚀 Space Explorer</title>
+<title>🌌 Space Quiz</title>
+
 <style>
 body{
     margin:0;
-    overflow:hidden;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
     font-family: 'Segoe UI', sans-serif;
-    background: radial-gradient(circle at center, #050520, #000);
+    background: radial-gradient(circle at top, #1b2735 0%, #090a0f 100%);
+    overflow:hidden;
     color:white;
 }
 
@@ -23,121 +28,103 @@ body{
     animation: twinkle 2s infinite alternate;
 }
 @keyframes twinkle{
-    from{opacity:0.2;}
+    from{opacity:0.3;}
     to{opacity:1;}
 }
 
-/* ยาน */
-#ship{
-    position:absolute;
-    width:80px;
-    bottom:20px;
-    left:50%;
-    transform:translateX(-50%);
-    animation: float 3s ease-in-out infinite;
-}
-@keyframes float{
-    0%{transform:translate(-50%,0);}
-    50%{transform:translate(-50%,-15px);}
-    100%{transform:translate(-50%,0);}
-}
-
-/* ดาวเคราะห์ */
-.planet{
-    position:absolute;
-    width:120px;
-    height:120px;
-    border-radius:50%;
-    cursor:pointer;
-    transition: 0.4s;
-    box-shadow:0 0 30px rgba(255,255,255,0.4);
-}
-.planet:hover{
-    transform:scale(1.2) rotate(10deg);
-}
-
 /* กล่องคำถาม */
-#quizBox{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    background:rgba(0,0,20,0.9);
+.quiz-container{
+    width:380px;
+    background:rgba(0,0,20,0.85);
     padding:25px;
     border-radius:20px;
-    display:none;
-    width:320px;
-    text-align:center;
-    box-shadow:0 0 20px cyan;
-    animation: fadeIn 0.5s ease;
+    box-shadow:0 0 25px #00f0ff;
+    backdrop-filter: blur(10px);
+    animation: floatBox 3s ease-in-out infinite;
 }
-@keyframes fadeIn{
-    from{opacity:0; transform:translate(-50%,-60%);}
-    to{opacity:1; transform:translate(-50%,-50%);}
+
+@keyframes floatBox{
+    0%{transform:translateY(0);}
+    50%{transform:translateY(-10px);}
+    100%{transform:translateY(0);}
+}
+
+h2{
+    text-align:center;
+    margin-bottom:20px;
+    color:#00f0ff;
+}
+
+.option{
+    margin:10px 0;
+    padding:10px;
+    border-radius:12px;
+    background:rgba(255,255,255,0.05);
+    cursor:pointer;
+    transition:0.3s;
+    border:2px solid transparent;
+}
+
+.option:hover{
+    background:rgba(0,240,255,0.2);
+    transform:scale(1.05);
+}
+
+.option.selected{
+    border:2px solid #00f0ff;
+}
+
+.correct{
+    background:rgba(0,255,0,0.3) !important;
+    border:2px solid lime !important;
+}
+
+.wrong{
+    background:rgba(255,0,0,0.3) !important;
+    border:2px solid red !important;
 }
 
 button{
-    margin:6px;
-    padding:8px 14px;
+    width:100%;
+    padding:10px;
+    margin-top:15px;
     border:none;
-    border-radius:10px;
+    border-radius:12px;
+    font-size:16px;
     cursor:pointer;
-    background:linear-gradient(45deg,#00c3ff,#0044ff);
+    background:linear-gradient(45deg,#00f0ff,#0044ff);
     color:white;
-    font-weight:bold;
     transition:0.3s;
 }
+
 button:hover{
-    transform:scale(1.1);
+    transform:scale(1.05);
 }
 
-#scoreBoard{
-    position:absolute;
-    top:10px;
-    left:10px;
-    font-size:18px;
-}
-
-/* เอฟเฟกต์ระเบิด */
-.explosion{
-    position:absolute;
-    width:20px;
-    height:20px;
-    border-radius:50%;
-    background:orange;
-    animation: boom 0.6s forwards;
-}
-@keyframes boom{
-    from{transform:scale(1); opacity:1;}
-    to{transform:scale(6); opacity:0;}
+.result{
+    margin-top:15px;
+    text-align:center;
+    font-weight:bold;
 }
 </style>
 </head>
 <body>
 
-<div id="scoreBoard">คะแนน: 0</div>
+<div class="quiz-container">
+    <h2>🪐 ดาวเคราะห์ที่ใหญ่ที่สุดคือ?</h2>
 
-<img id="ship" src="https://cdn-icons-png.flaticon.com/512/3212/3212608.png">
+    <div class="option">ดาวอังคาร</div>
+    <div class="option">ดาวพฤหัสบดี</div>
+    <div class="option">ดาวศุกร์</div>
+    <div class="option">ดาวเนปจูน</div>
 
-<div class="planet" id="mars"
-     style="top:20%; left:20%; background:radial-gradient(circle,#ff5f5f,#800000);"></div>
-
-<div class="planet" id="jupiter"
-     style="top:40%; right:15%; background:radial-gradient(circle,#f7c873,#a67c00);"></div>
-
-<div class="planet" id="neptune"
-     style="top:65%; left:45%; background:radial-gradient(circle,#5fd3ff,#003366);"></div>
-
-<div id="quizBox">
-    <h3 id="question"></h3>
-    <div id="answers"></div>
+    <button onclick="checkAnswer()">ส่งคำตอบ</button>
+    <div class="result" id="result"></div>
 </div>
 
 <script>
-let score=0;
-const scoreBoard=document.getElementById("scoreBoard");
 
-/* ดาวพื้นหลัง */
+/* สร้างดาวพื้นหลัง */
 for(let i=0;i<150;i++){
     let star=document.createElement("div");
     star.className="star";
@@ -147,62 +134,44 @@ for(let i=0;i<150;i++){
     document.body.appendChild(star);
 }
 
-const quizzes={
-    mars:{
-        question:"ดาวอังคารมีชื่อเล่นว่าอะไร?",
-        answers:["ดาวเคราะห์แดง","ดาวแก๊สยักษ์","ดาวน้ำแข็ง"],
-        correct:0
-    },
-    jupiter:{
-        question:"ดาวพฤหัสบดีเป็นดาวประเภทใด?",
-        answers:["ดาวหิน","ดาวแก๊สยักษ์","ดาวแคระ"],
-        correct:1
-    },
-    neptune:{
-        question:"ดาวเนปจูนมีสีอะไร?",
-        answers:["แดง","น้ำเงิน","เหลือง"],
-        correct:1
-    }
-};
+const options=document.querySelectorAll(".option");
+let selectedIndex=null;
+const correctIndex=1; // ดาวพฤหัสบดี
 
-function explosionEffect(x,y){
-    const boom=document.createElement("div");
-    boom.className="explosion";
-    boom.style.left=x+"px";
-    boom.style.top=y+"px";
-    document.body.appendChild(boom);
-    setTimeout(()=>boom.remove(),600);
-}
-
-function showQuiz(planet){
-    const quiz=quizzes[planet];
-    document.getElementById("quizBox").style.display="block";
-    document.getElementById("question").innerText=quiz.question;
-
-    const ansDiv=document.getElementById("answers");
-    ansDiv.innerHTML="";
-
-    quiz.answers.forEach((ans,index)=>{
-        let btn=document.createElement("button");
-        btn.innerText=ans;
-        btn.onclick=function(e){
-            if(index===quiz.correct){
-                score+=10;
-                scoreBoard.innerText="คะแนน: "+score;
-                explosionEffect(e.pageX,e.pageY);
-                alert("ตอบถูกต้อง! +10 🚀");
-            }else{
-                alert("ตอบผิด! ลองใหม่!");
-            }
-        };
-        ansDiv.appendChild(btn);
+options.forEach((option,index)=>{
+    option.addEventListener("click",()=>{
+        options.forEach(o=>o.classList.remove("selected"));
+        option.classList.add("selected");
+        selectedIndex=index;
     });
-}
+});
 
-document.getElementById("mars").onclick=()=>showQuiz("mars");
-document.getElementById("jupiter").onclick=()=>showQuiz("jupiter");
-document.getElementById("neptune").onclick=()=>showQuiz("neptune");
+function checkAnswer(){
+    if(selectedIndex===null){
+        alert("กรุณาเลือกคำตอบก่อน 🚀");
+        return;
+    }
+
+    options.forEach((option,index)=>{
+        if(index===correctIndex){
+            option.classList.add("correct");
+        }
+        if(index===selectedIndex && selectedIndex!==correctIndex){
+            option.classList.add("wrong");
+        }
+    });
+
+    const result=document.getElementById("result");
+    if(selectedIndex===correctIndex){
+        result.innerHTML="✅ ถูกต้อง! คำตอบคือ ดาวพฤหัสบดี 🌟";
+        result.style.color="lime";
+    }else{
+        result.innerHTML="❌ ตอบผิด! คำตอบที่ถูกคือ ดาวพฤหัสบดี 🌟";
+        result.style.color="red";
+    }
+}
 </script>
+
 
 </body>
 </html>
