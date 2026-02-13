@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚀 Space Explorer</title>
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at center, #050520, #000);
+    color:white;
+}
+
+/* ดาวพื้นหลัง */
+.star{
+    position:absolute;
+    width:2px;
+    height:2px;
+    background:white;
+    border-radius:50%;
+    animation: twinkle 2s infinite alternate;
+}
+@keyframes twinkle{
+    from{opacity:0.2;}
+    to{opacity:1;}
+}
+
+/* ยาน */
+#ship{
+    position:absolute;
+    width:80px;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    animation: float 3s ease-in-out infinite;
+}
+@keyframes float{
+    0%{transform:translate(-50%,0);}
+    50%{transform:translate(-50%,-15px);}
+    100%{transform:translate(-50%,0);}
+}
+
+/* ดาวเคราะห์ */
+.planet{
+    position:absolute;
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    cursor:pointer;
+    transition: 0.4s;
+    box-shadow:0 0 30px rgba(255,255,255,0.4);
+}
+.planet:hover{
+    transform:scale(1.2) rotate(10deg);
+}
+
+/* กล่องคำถาม */
+#quizBox{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:rgba(0,0,20,0.9);
+    padding:25px;
+    border-radius:20px;
+    display:none;
+    width:320px;
+    text-align:center;
+    box-shadow:0 0 20px cyan;
+    animation: fadeIn 0.5s ease;
+}
+@keyframes fadeIn{
+    from{opacity:0; transform:translate(-50%,-60%);}
+    to{opacity:1; transform:translate(-50%,-50%);}
+}
+
+button{
+    margin:6px;
+    padding:8px 14px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:linear-gradient(45deg,#00c3ff,#0044ff);
+    color:white;
+    font-weight:bold;
+    transition:0.3s;
+}
+button:hover{
+    transform:scale(1.1);
+}
+
+#scoreBoard{
+    position:absolute;
+    top:10px;
+    left:10px;
+    font-size:18px;
+}
+
+/* เอฟเฟกต์ระเบิด */
+.explosion{
+    position:absolute;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:orange;
+    animation: boom 0.6s forwards;
+}
+@keyframes boom{
+    from{transform:scale(1); opacity:1;}
+    to{transform:scale(6); opacity:0;}
+}
+</style>
+</head>
+<body>
+
+<div id="scoreBoard">คะแนน: 0</div>
+
+<img id="ship" src="https://cdn-icons-png.flaticon.com/512/3212/3212608.png">
+
+<div class="planet" id="mars"
+     style="top:20%; left:20%; background:radial-gradient(circle,#ff5f5f,#800000);"></div>
+
+<div class="planet" id="jupiter"
+     style="top:40%; right:15%; background:radial-gradient(circle,#f7c873,#a67c00);"></div>
+
+<div class="planet" id="neptune"
+     style="top:65%; left:45%; background:radial-gradient(circle,#5fd3ff,#003366);"></div>
+
+<div id="quizBox">
+    <h3 id="question"></h3>
+    <div id="answers"></div>
+</div>
+
+<script>
+let score=0;
+const scoreBoard=document.getElementById("scoreBoard");
+
+/* ดาวพื้นหลัง */
+for(let i=0;i<150;i++){
+    let star=document.createElement("div");
+    star.className="star";
+    star.style.top=Math.random()*100+"vh";
+    star.style.left=Math.random()*100+"vw";
+    star.style.animationDuration=(Math.random()*2+1)+"s";
+    document.body.appendChild(star);
+}
+
+const quizzes={
+    mars:{
+        question:"ดาวอังคารมีชื่อเล่นว่าอะไร?",
+        answers:["ดาวเคราะห์แดง","ดาวแก๊สยักษ์","ดาวน้ำแข็ง"],
+        correct:0
+    },
+    jupiter:{
+        question:"ดาวพฤหัสบดีเป็นดาวประเภทใด?",
+        answers:["ดาวหิน","ดาวแก๊สยักษ์","ดาวแคระ"],
+        correct:1
+    },
+    neptune:{
+        question:"ดาวเนปจูนมีสีอะไร?",
+        answers:["แดง","น้ำเงิน","เหลือง"],
+        correct:1
+    }
+};
+
+function explosionEffect(x,y){
+    const boom=document.createElement("div");
+    boom.className="explosion";
+    boom.style.left=x+"px";
+    boom.style.top=y+"px";
+    document.body.appendChild(boom);
+    setTimeout(()=>boom.remove(),600);
+}
+
+function showQuiz(planet){
+    const quiz=quizzes[planet];
+    document.getElementById("quizBox").style.display="block";
+    document.getElementById("question").innerText=quiz.question;
+
+    const ansDiv=document.getElementById("answers");
+    ansDiv.innerHTML="";
+
+    quiz.answers.forEach((ans,index)=>{
+        let btn=document.createElement("button");
+        btn.innerText=ans;
+        btn.onclick=function(e){
+            if(index===quiz.correct){
+                score+=10;
+                scoreBoard.innerText="คะแนน: "+score;
+                explosionEffect(e.pageX,e.pageY);
+                alert("ตอบถูกต้อง! +10 🚀");
+            }else{
+                alert("ตอบผิด! ลองใหม่!");
+            }
+        };
+        ansDiv.appendChild(btn);
+    });
+}
+
+document.getElementById("mars").onclick=()=>showQuiz("mars");
+document.getElementById("jupiter").onclick=()=>showQuiz("jupiter");
+document.getElementById("neptune").onclick=()=>showQuiz("neptune");
+</script>
+
+</body>
+</html>
